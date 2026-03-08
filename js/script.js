@@ -3,21 +3,35 @@
 // ==========================
 
 // 1. Backend URL
-const BACKEND_URL = "https://dayima-backend.onrender.com"; // Your Render backend
+const BACKEND_URL = "https://dayima-backend.onrender.com"; // live backend
 
-// 2. TOGGLE CARD LOGIC
+// 2. TOGGLE CARD
 function toggleCard(headerElement) {
   const card = headerElement.closest(".booking-card");
   if (card) card.classList.toggle("is-expanded");
 }
 
-// 3. LOAD BOOKINGS
+// 3. CAROUSEL
+function startCarousel() {
+  const images = document.querySelectorAll(".carousel img");
+  if (!images.length) return;
+
+  let currentIndex = 0;
+  images[0].classList.add("active");
+
+  setInterval(() => {
+    images[currentIndex].classList.remove("active");
+    currentIndex = (currentIndex + 1) % images.length;
+    images[currentIndex].classList.add("active");
+  }, 3000);
+}
+
+// 4. LOAD BOOKINGS
 async function loadBookings() {
   const container = document.getElementById("bookingsList");
   if (!container) return;
 
   try {
-    // Fetch bookings from backend
     const response = await fetch(`${BACKEND_URL}/api/book-hygiene`);
     if (!response.ok) throw new Error("Failed to fetch bookings");
     const bookings = await response.json();
@@ -74,7 +88,7 @@ async function loadBookings() {
   }
 }
 
-// 4. DELETE BOOKING
+// 5. DELETE BOOKING
 async function cancelBooking(id) {
   if (!confirm("Delete this booking?")) return;
 
@@ -82,10 +96,8 @@ async function cancelBooking(id) {
     const res = await fetch(`${BACKEND_URL}/api/book-hygiene/${id}`, {
       method: "DELETE",
     });
-
     if (!res.ok) throw new Error("Delete failed");
 
-    // Refresh bookings
     loadBookings();
   } catch (err) {
     console.error("❌ Cancel booking error:", err);
@@ -93,7 +105,7 @@ async function cancelBooking(id) {
   }
 }
 
-// 5. FORM SUBMISSION
+// 6. FORM SUBMISSION
 const hygieneForm = document.getElementById("hygieneForm");
 
 if (hygieneForm) {
@@ -134,5 +146,8 @@ if (hygieneForm) {
   });
 }
 
-// 6. INITIALIZE
-document.addEventListener("DOMContentLoaded", loadBookings);
+// 7. INIT ALL
+document.addEventListener("DOMContentLoaded", () => {
+  startCarousel();
+  loadBookings();
+});
