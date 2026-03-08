@@ -4,147 +4,134 @@
 const BACKEND_URL = "https://dayima-backend.onrender.com";
 
 // ================================
-// 1. CAROUSEL
+// 1. CAROUSEL (Fixed display logic)
 // ================================
 function startCarousel() {
-  const carousel = document.getElementById("cardStack");
-  if (!carousel) return;
+    const carousel = document.getElementById("cardStack");
+    if (!carousel) return;
 
-  const images = carousel.querySelectorAll("img.card");
-  if (!images.length) return;
+    const images = carousel.querySelectorAll("img.card");
+    if (!images.length) return;
 
-  let currentIndex = 0;
-  images.forEach((img, i) => {
-    img.style.display = i === 0 ? "block" : "none"; // show first image
-  });
+    let currentIndex = 0;
+    
+    // Set initial state
+    images.forEach((img, i) => {
+        img.style.display = (i === 0) ? "block" : "none";
+    });
 
-  setInterval(() => {
-    images[currentIndex].style.display = "none";
-    currentIndex = (currentIndex + 1) % images.length;
-    images[currentIndex].style.display = "block";
-  }, 3000); // change every 3 seconds
+    setInterval(() => {
+        images[currentIndex].style.display = "none";
+        currentIndex = (currentIndex + 1) % images.length;
+        images[currentIndex].style.display = "block";
+    }, 3000);
 }
 
 // ================================
 // 2. TOGGLE BOOKING CARD
 // ================================
 function toggleCard(headerElement) {
-  const card = headerElement.closest(".booking-card");
-  if (card) card.classList.toggle("is-expanded");
+    const card = headerElement.closest(".booking-card");
+    if (card) card.classList.toggle("is-expanded");
 }
 
 // ================================
-// 3. LOAD BOOKINGS
+// 3. LOAD BOOKINGS (Updated Route)
 // ================================
 async function loadBookings() {
-  const container = document.getElementById("bookingsList");
-  if (!container) return;
+    const container = document.getElementById("bookingsList");
+    if (!container) return;
 
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/book-hygiene`);
-    const bookings = await res.json();
+    try {
+        // CHANGED: Fetching from /api/bookings instead of /api/book-hygiene
+        const res = await fetch(`${BACKEND_URL}/api/bookings`);
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        
+        const bookings = await res.json();
 
-    container.innerHTML = "";
-    if (!bookings || bookings.length === 0) {
-      container.innerHTML = "<p style='text-align:center;'>No bookings yet.</p>";
-      return;
+        container.innerHTML = "";
+        if (!bookings || bookings.length === 0) {
+            container.innerHTML = "<p style='text-align:center;'>No bookings yet.</p>";
+            return;
+        }
+
+        bookings.forEach((b) => {
+            const div = document.createElement("div");
+            div.className = "booking-card";
+            div.innerHTML = `
+                <div class="card-header" onclick="toggleCard(this)">
+                    <div class="header-left">
+                        <span class="tag">${b.workshopType || "Workshop"}</span>
+                        <h3>${b.organization || "Unnamed Org"}</h3>
+                    </div>
+                    <div class="header-right"><span class="toggle-icon">▼</span></div>
+                </div>
+                <div class="card-content">
+                    <div class="booking-details">
+                        <p><strong>Contact:</strong> ${b.contactPerson}</p>
+                        <p><strong>Email:</strong> ${b.email}</p>
+                        <p><strong>Date:</strong> ${b.preferredDate}</p>
+                    </div>
+                    ${b.message ? `<div class="notes-box"><strong>Notes:</strong> ${b.message}</div>` : ""}
+                    <button class="btn-cancel" onclick="cancelBooking('${b._id}')">Delete Request</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    } catch (err) {
+        console.error("❌ Fetch Error:", err);
+        container.innerHTML = `<p style='color:red;text-align:center;'>Error loading data. Check console.</p>`;
     }
-
-    bookings.forEach((b) => {
-      const div = document.createElement("div");
-      div.className = "booking-card";
-
-      div.innerHTML = `
-        <div class="card-header" onclick="toggleCard(this)">
-          <div class="header-left">
-            <span class="tag">${b.workshopType || "Workshop Request"}</span>
-            <h3>${b.organization || "Unnamed Organization"}</h3>
-          </div>
-          <div class="header-right">
-            <span class="toggle-icon">▼</span>
-          </div>
-        </div>
-
-        <div class="card-content">
-          <div class="booking-details">
-            <p><strong>Contact:</strong> ${b.contactPerson || "N/A"}</p>
-            <p><strong>Email:</strong> ${b.email || "No email"}</p>
-            <p><strong>Phone:</strong> ${b.phone || "No phone"}</p>
-            <p><strong>Date:</strong> ${b.preferredDate || "TBD"}</p>
-            <p><strong>Participants:</strong> ${b.participants || 0}</p>
-          </div>
-
-          ${b.message ? `<div class="notes-box"><strong>Notes:</strong> ${b.message}</div>` : ""}
-
-          <button class="btn-cancel" onclick="cancelBooking('${b._id}')">Cancel Request →</button>
-        </div>
-      `;
-      container.appendChild(div);
-    });
-  } catch (err) {
-    console.error("❌ Error loading bookings:", err);
-    container.innerHTML =
-      "<p style='color:red;text-align:center;'>Cannot connect to backend.</p>";
-  }
 }
 
 // ================================
 // 4. CANCEL BOOKING
 // ================================
 async function cancelBooking(id) {
-  if (!confirm("Delete this booking?")) return;
-
-  try {
-    await fetch(`${BACKEND_URL}/api/book-hygiene/${id}`, { method: "DELETE" });
-    loadBookings();
-  } catch (err) {
-    console.error(err);
-    alert("Failed to delete booking.");
-  }
+    if (!confirm("Delete this booking?")) return;
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/book-hygiene/${id}`, { method: "DELETE" });
+        if (res.ok) loadBookings();
+    } catch (err) {
+        alert("Delete failed.");
+    }
 }
 
 // ================================
-// 5. HANDLE FORM SUBMISSION
+// 5. SUBMIT FORM
 // ================================
 const hygieneForm = document.getElementById("hygieneForm");
 if (hygieneForm) {
-  hygieneForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+    hygieneForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = {
+            workshopType: document.getElementById("workshopType").value,
+            organization: document.getElementById("organization").value,
+            contactPerson: document.getElementById("contactPerson").value,
+            email: document.getElementById("email").value,
+            phone: document.getElementById("phone").value,
+            preferredDate: document.getElementById("date").value,
+            participants: document.getElementById("participants").value,
+            message: document.getElementById("notes").value,
+        };
 
-    const formData = {
-      workshopType: document.getElementById("workshopType").value,
-      organization: document.getElementById("organization").value,
-      contactPerson: document.getElementById("contactPerson").value,
-      email: document.getElementById("email").value,
-      phone: document.getElementById("phone").value,
-      preferredDate: document.getElementById("date").value,
-      participants: document.getElementById("participants").value,
-      message: document.getElementById("notes").value,
-    };
-
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/book-hygiene`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      if (!res.ok) throw new Error("Submission failed");
-
-      alert("🎉 Request submitted successfully!");
-      hygieneForm.reset();
-      loadBookings();
-    } catch (err) {
-      console.error("❌ Submission error:", err);
-      alert("Could not connect to the backend.");
-    }
-  });
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/book-hygiene`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData),
+            });
+            if (!res.ok) throw new Error("Submission failed");
+            alert("🎉 Request submitted!");
+            hygieneForm.reset();
+            loadBookings();
+        } catch (err) {
+            alert("Could not connect to backend.");
+        }
+    });
 }
 
-// ================================
-// 6. INITIALIZE
-// ================================
 document.addEventListener("DOMContentLoaded", () => {
-  startCarousel();
-  loadBookings();
+    startCarousel();
+    loadBookings();
 });
