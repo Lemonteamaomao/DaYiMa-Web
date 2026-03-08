@@ -1,30 +1,23 @@
 // ================================
-// GLOBAL BACKEND URL
+// CONFIG
 // ================================
 const BACKEND_URL = "https://dayima-backend.onrender.com";
 
 // ================================
-// 1. TOGGLE LOGIC
+// 1. CAROUSEL & TOGGLE
 // ================================
 function toggleCard(headerElement) {
     const card = headerElement.closest(".booking-card");
-    if (card) {
-        card.classList.toggle("is-expanded");
-    }
+    if (card) card.classList.toggle("is-expanded");
 }
 
-// ================================
-// 2. CAROUSEL LOGIC
-// ================================
 function startCarousel() {
-    const images = document.querySelectorAll(".carousel img");
+    const images = document.querySelectorAll("#cardStack img.card");
     if (images.length === 0) return;
 
     let currentIndex = 0;
-    // Set initial active class
-    images.forEach((img, i) => {
-        img.classList.toggle("active", i === 0);
-    });
+    // Set first image active
+    images.forEach((img, i) => img.classList.toggle("active", i === 0));
 
     setInterval(() => {
         images[currentIndex].classList.remove("active");
@@ -34,15 +27,14 @@ function startCarousel() {
 }
 
 // ================================
-// 3. LOAD DASHBOARD DATA
+// 2. DASHBOARD (Load Bookings)
 // ================================
 async function loadBookings() {
     const container = document.getElementById("bookingsList");
     if (!container) return;
 
     try {
-        // CHANGED: Using live BACKEND_URL and /api/bookings route
-        const response = await fetch(`${BACKEND_URL}/api/bookings`);
+        const response = await fetch(`${BACKEND_URL}/api/book-hygiene`);
         const bookings = await response.json();
 
         container.innerHTML = ""; 
@@ -56,18 +48,15 @@ async function loadBookings() {
             const div = document.createElement("div");
             div.className = "booking-card";
 
-            const displayTag = b.workshopType || "Workshop Request";
-            // Check if these fields exist in your DB; otherwise default to false
             const isSeen = b.isSeen ? "active" : "";
             const isReplied = b.isReplied ? "active" : "";
 
             div.innerHTML = `
                 <div class="card-header" onclick="toggleCard(this)">
                     <div class="header-left">
-                        <span class="tag">${displayTag}</span>
+                        <span class="tag">${b.workshopType || "Request"}</span>
                         <h3>${b.organization || "Unnamed Org"}</h3>
                     </div>
-                    
                     <div class="header-right">
                         <div class="status-tracker">
                             <div class="step active"><div class="dot"></div></div>
@@ -79,98 +68,70 @@ async function loadBookings() {
                         <span class="toggle-icon">▼</span>
                     </div>
                 </div>
-
                 <div class="card-content">
                     <div class="booking-details">
                         <p><img src="assets/images/icons/user.png" class="card-icon" onerror="this.style.display='none'"> <strong>Contact:</strong> ${b.contactPerson || "N/A"}</p>
-                        <p><img src="assets/images/icons/email.png" class="card-icon" onerror="this.style.display='none'"> <strong>Email:</strong> ${b.email || "No email"}</p>
-                        <p><img src="assets/images/icons/phone.png" class="card-icon" onerror="this.style.display='none'"> <strong>Phone:</strong> ${b.phone || "No phone"}</p>
-                        <p><img src="assets/images/icons/calendar.png" class="card-icon" onerror="this.style.display='none'"> <strong>Date:</strong> ${b.preferredDate || "TBD"}</p>
+                        <p><img src="assets/images/icons/email.png" class="card-icon" onerror="this.style.display='none'"> <strong>Email:</strong> ${b.email || "N/A"}</p>
+                        <p><img src="assets/images/icons/phone.png" class="card-icon" onerror="this.style.display='none'"> <strong>Phone:</strong> ${b.phone || "N/A"}</p>
+                        <p><img src="assets/images/icons/calendar.png" class="card-icon" onerror="this.style.display='none'"> <strong>Date:</strong> ${b.date || "TBD"}</p>
                         <p><img src="assets/images/icons/group.png" class="card-icon" onerror="this.style.display='none'"> <strong>Size:</strong> ${b.participants || 0} pax</p>
                     </div>
-
-                    ${b.message ? `
-                        <div class="notes-box">
-                            <img src="assets/images/icons/notes.png" class="card-icon" onerror="this.style.display='none'"> 
-                            <strong>Notes:</strong> ${b.message}
-                        </div>` : ""
-                    }
-
-                    <button class="btn-cancel" onclick="cancelBooking('${b._id}')">
-                        Cancel Request →
-                    </button>
+                    ${b.notes ? `<div class="notes-box"><strong>Notes:</strong> ${b.notes}</div>` : ""}
+                    <button class="btn-cancel" onclick="cancelBooking('${b._id}')">Cancel Request →</button>
                 </div>
             `;
             container.appendChild(div);
         });
     } catch (err) {
-        console.error("❌ Error:", err);
-        container.innerHTML = "<p style='color:red; text-align:center;'>Could not connect to the backend server.</p>";
+        container.innerHTML = "<p style='color:red; text-align:center;'>Server connection failed. Please wait a moment.</p>";
     }
 }
 
 // ================================
-// 4. DELETE BOOKING
+// 3. ACTIONS (Delete & Submit)
 // ================================
 async function cancelBooking(id) {
-    if (!confirm("Are you sure you want to delete this request?")) return;
+    if (!confirm("Are you sure? This will delete the record and notify admin.")) return;
     try {
-        const response = await fetch(`${BACKEND_URL}/api/book-hygiene/${id}`, {
-            method: "DELETE",
-        });
-        if (response.ok) {
-            loadBookings(); 
-        } else {
-            alert("Delete failed on server.");
-        }
+        await fetch(`${BACKEND_URL}/api/book-hygiene/${id}`, { method: "DELETE" });
+        loadBookings();
     } catch (err) {
-        alert("Delete failed. Check your connection.");
+        alert("Delete failed.");
     }
 }
 
-// ================================
-// 5. SUBMIT NEW BOOKING
-// ================================
 const hygieneForm = document.getElementById("hygieneForm");
 if (hygieneForm) {
     hygieneForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-
         const formData = {
             workshopType: document.getElementById("workshopType").value,
             organization: document.getElementById("organization").value,
             contactPerson: document.getElementById("contactPerson").value,
             email: document.getElementById("email").value,
             phone: document.getElementById("phone").value,
-            preferredDate: document.getElementById("date").value, // Key changed to preferredDate to match backend
+            date: document.getElementById("date").value,
             participants: document.getElementById("participants").value,
-            message: document.getElementById("notes").value, // Key changed to message to match backend
+            notes: document.getElementById("notes").value,
         };
 
         try {
-            const response = await fetch(`${BACKEND_URL}/api/book-hygiene`, {
+            const res = await fetch(`${BACKEND_URL}/api/book-hygiene`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData),
             });
-
-            if (response.ok) {
+            if (res.ok) {
                 alert("🎉 Request submitted successfully!");
                 hygieneForm.reset();
                 loadBookings();
-            } else {
-                alert("Submission failed. Please try again.");
             }
         } catch (err) {
-            console.error("❌ Submission Error:", err);
-            alert("Could not connect to the server.");
+            alert("Submission error. Check your connection.");
         }
     });
 }
 
-// ================================
-// 6. INITIALIZE
-// ================================
 document.addEventListener("DOMContentLoaded", () => {
     startCarousel();
     loadBookings();
