@@ -1923,3 +1923,24 @@ body {
     font-size: 30px;
     color: #ddd;
 }
+/* Carousel Rules */
+#cardStack {
+    position: relative;
+    overflow: hidden;
+}
+
+#cardStack img.card {
+    display: none; /* Hide all by default */
+    width: 100%;
+    height: auto;
+}
+
+#cardStack img.card.active {
+    display: block; /* Show only the active one */
+    animation: fadeEffect 0.8s ease;
+}
+
+@keyframes fadeEffect {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
