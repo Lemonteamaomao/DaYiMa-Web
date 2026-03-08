@@ -1,40 +1,56 @@
-const BACKEND_URL = "https://dayima-backend.onrender.com"; // live backend
+// ================================
+// GLOBAL VARIABLES
+// ================================
+const BACKEND_URL = "https://dayima-backend.onrender.com"; // Update to your deployed backend
 
-/* TOGGLE CARD */
+// ================================
+// 1. TOGGLE BOOKING CARD
+// ================================
 function toggleCard(headerElement) {
   const card = headerElement.closest(".booking-card");
-  if (card) card.classList.toggle("is-expanded");
+  if (card) {
+    card.classList.toggle("is-expanded");
+  }
 }
 
-/* CAROUSEL */
+// ================================
+// 2. CAROUSEL LOGIC
+// ================================
 function startCarousel() {
-  const images = document.querySelectorAll(".carousel img");
-  if (!images.length) return;
+  const carousel = document.getElementById("cardStack");
+  if (!carousel) return;
+
+  const images = carousel.querySelectorAll("img.card");
+  if (images.length === 0) return;
 
   let currentIndex = 0;
-  images[0].classList.add("active");
+  images.forEach((img, i) => {
+    img.style.display = i === 0 ? "block" : "none"; // Show first image
+  });
 
   setInterval(() => {
-    images[currentIndex].classList.remove("active");
+    images[currentIndex].style.display = "none";
     currentIndex = (currentIndex + 1) % images.length;
-    images[currentIndex].classList.add("active");
-  }, 3000);
+    images[currentIndex].style.display = "block";
+  }, 3000); // Change every 3s
 }
 
-/* LOAD BOOKINGS */
+// ================================
+// 3. LOAD BOOKINGS
+// ================================
 async function loadBookings() {
   const container = document.getElementById("bookingsList");
   if (!container) return;
 
   try {
-    const response = await fetch(`${BACKEND_URL}/api/book-hygiene`);
-    const bookings = await response.json();
+    const res = await fetch(`${BACKEND_URL}/api/book-hygiene`);
+    const bookings = await res.json();
 
     container.innerHTML = "";
 
-    if (!bookings.length) {
+    if (!bookings || bookings.length === 0) {
       container.innerHTML =
-        "<p style='text-align:center;'>No current bookings found.</p>";
+        "<p style='text-align:center;'>No bookings yet.</p>";
       return;
     }
 
@@ -46,7 +62,7 @@ async function loadBookings() {
         <div class="card-header" onclick="toggleCard(this)">
           <div class="header-left">
             <span class="tag">${b.workshopType || "Workshop Request"}</span>
-            <h3>${b.organization || "Unnamed Org"}</h3>
+            <h3>${b.organization || "Unnamed Organization"}</h3>
           </div>
           <div class="header-right">
             <span class="toggle-icon">▼</span>
@@ -58,32 +74,31 @@ async function loadBookings() {
             <p><strong>Contact:</strong> ${b.contactPerson || "N/A"}</p>
             <p><strong>Email:</strong> ${b.email || "No email"}</p>
             <p><strong>Phone:</strong> ${b.phone || "No phone"}</p>
-            <p><strong>Date:</strong> ${b.date || "TBD"}</p>
+            <p><strong>Date:</strong> ${b.preferredDate || "TBD"}</p>
             <p><strong>Participants:</strong> ${b.participants || 0}</p>
           </div>
-          ${
-            b.notes
-              ? `<div class="notes-box"><strong>Notes:</strong> ${b.notes}</div>`
-              : ""
-          }
-          <button class="btn-cancel" onclick="cancelBooking('${b._id}')">
-            Cancel Request →
-          </button>
+
+          ${b.message ? `<div class="notes-box"><strong>Notes:</strong> ${b.message}</div>` : ""}
+
+          <button class="btn-cancel" onclick="cancelBooking('${b._id}')">Cancel Request →</button>
         </div>
       `;
-
       container.appendChild(div);
     });
   } catch (err) {
-    console.error("❌ Error:", err);
-    container.innerHTML =
-      "<p style='color:red; text-align:center;'>Cannot connect to backend. Check if the Render backend URL is correct.</p>";
+    console.error("❌ Error loading bookings:", err);
+    if (container) {
+      container.innerHTML =
+        "<p style='color:red;text-align:center;'>Cannot connect to backend.</p>";
+    }
   }
 }
 
-/* DELETE BOOKING */
+// ================================
+// 4. CANCEL BOOKING
+// ================================
 async function cancelBooking(id) {
-  if (!confirm("Are you sure you want to delete this request?")) return;
+  if (!confirm("Delete this booking?")) return;
 
   try {
     await fetch(`${BACKEND_URL}/api/book-hygiene/${id}`, {
@@ -91,13 +106,15 @@ async function cancelBooking(id) {
     });
     loadBookings();
   } catch (err) {
-    alert("Delete failed.");
+    alert("Failed to delete booking.");
+    console.error(err);
   }
 }
 
-/* FORM SUBMISSION */
+// ================================
+// 5. HANDLE FORM SUBMISSION
+// ================================
 const hygieneForm = document.getElementById("hygieneForm");
-
 if (hygieneForm) {
   hygieneForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -108,9 +125,9 @@ if (hygieneForm) {
       contactPerson: document.getElementById("contactPerson").value,
       email: document.getElementById("email").value,
       phone: document.getElementById("phone").value,
-      date: document.getElementById("date").value,
+      preferredDate: document.getElementById("date").value,
       participants: document.getElementById("participants").value,
-      notes: document.getElementById("notes").value,
+      message: document.getElementById("notes").value,
     };
 
     try {
@@ -126,13 +143,15 @@ if (hygieneForm) {
       hygieneForm.reset();
       loadBookings();
     } catch (err) {
-      console.error("❌ Submission Error:", err);
+      console.error("❌ Submission error:", err);
       alert("Could not connect to the backend.");
     }
   });
 }
 
-/* INIT */
+// ================================
+// 6. INITIALIZE
+// ================================
 document.addEventListener("DOMContentLoaded", () => {
   startCarousel();
   loadBookings();
