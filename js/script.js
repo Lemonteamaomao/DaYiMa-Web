@@ -1,5 +1,17 @@
 const BACKEND_URL = "https://dayima-backend.onrender.com";
 
+/* TOGGLE CARD */
+
+function toggleCard(headerElement) {
+
+  const card = headerElement.closest(".booking-card");
+
+  if (card) {
+    card.classList.toggle("is-expanded");
+  }
+
+}
+
 /* LOAD BOOKINGS */
 
 async function loadBookings() {
@@ -10,35 +22,65 @@ async function loadBookings() {
   try {
 
     const response = await fetch(`${BACKEND_URL}/api/bookings`);
-
     const bookings = await response.json();
 
     container.innerHTML = "";
 
     if (bookings.length === 0) {
 
-      container.innerHTML = "<p>No bookings yet.</p>";
-      return;
+      container.innerHTML =
+        "<p style='text-align:center;'>No bookings yet.</p>";
 
+      return;
     }
 
     bookings.forEach((b) => {
 
       const div = document.createElement("div");
+      div.className = "booking-card";
 
       div.innerHTML = `
-        <h3>${b.organization}</h3>
-        <p><strong>Workshop:</strong> ${b.workshopType}</p>
-        <p><strong>Contact:</strong> ${b.contactPerson}</p>
-        <p><strong>Email:</strong> ${b.email}</p>
-        <p><strong>Date:</strong> ${b.preferredDate}</p>
-        <p><strong>Participants:</strong> ${b.participants}</p>
 
-        <button onclick="cancelBooking('${b._id}')">
-        Delete
+      <div class="card-header" onclick="toggleCard(this)">
+
+        <div class="header-left">
+
+          <span class="tag">${b.workshopType || "Workshop Request"}</span>
+          <h3>${b.organization || "Unnamed Organization"}</h3>
+
+        </div>
+
+        <div class="header-right">
+          <span class="toggle-icon">▼</span>
+        </div>
+
+      </div>
+
+      <div class="card-content">
+
+        <div class="booking-details">
+
+          <p><strong>Contact:</strong> ${b.contactPerson || "N/A"}</p>
+          <p><strong>Email:</strong> ${b.email || "No email"}</p>
+          <p><strong>Phone:</strong> ${b.phone || "No phone"}</p>
+          <p><strong>Date:</strong> ${b.preferredDate || "TBD"}</p>
+          <p><strong>Participants:</strong> ${b.participants || 0}</p>
+
+        </div>
+
+        ${
+          b.message
+            ? `<div class="notes-box">
+                 <strong>Notes:</strong> ${b.message}
+               </div>`
+            : ""
+        }
+
+        <button class="btn-cancel" onclick="cancelBooking('${b._id}')">
+          Cancel Request →
         </button>
 
-        <hr>
+      </div>
       `;
 
       container.appendChild(div);
@@ -50,9 +92,10 @@ async function loadBookings() {
     console.error(err);
 
     container.innerHTML =
-      "<p style='color:red'>Cannot connect to backend.</p>";
+      "<p style='color:red;text-align:center;'>Cannot connect to backend.</p>";
 
   }
+
 }
 
 /* DELETE BOOKING */
@@ -69,7 +112,7 @@ async function cancelBooking(id) {
 
 }
 
-/* FORM SUBMIT */
+/* FORM SUBMISSION */
 
 const hygieneForm = document.getElementById("hygieneForm");
 
@@ -97,16 +140,14 @@ if (hygieneForm) {
       const res = await fetch(`${BACKEND_URL}/api/book-hygiene`, {
 
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
 
       });
 
       if (!res.ok) throw new Error();
 
-      alert("Booking submitted!");
+      alert("🎉 Request submitted successfully!");
 
       hygieneForm.reset();
 
@@ -114,7 +155,7 @@ if (hygieneForm) {
 
     } catch {
 
-      alert("Could not connect to backend.");
+      alert("Could not connect to the backend.");
 
     }
 
@@ -122,6 +163,6 @@ if (hygieneForm) {
 
 }
 
-/* INITIALIZE */
+/* INIT */
 
 document.addEventListener("DOMContentLoaded", loadBookings);
