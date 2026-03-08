@@ -1,188 +1,154 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>The Dayima Project</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css" />
-</head>
-<body>
+// -----------------------------
+// CONFIG
+// -----------------------------
+const BACKEND_URL = "https://dayima-backend.onrender.com"; // Update if your backend URL changes
 
-<header class="navbar">
-    <div class="container nav-content">
-        <div class="logo">
-            <img src="assets/images/Logo1ldpi.png" alt="DAYIMA Logo">
-            <span>The DaYiMa Project</span>
-        </div>
-        <nav>
-            <ul class="nav-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="programs.html">Programs</a></li>
-                <li><a href="#map">Map</a></li>
-                <li><a href="#team">Team</a></li>
-                <li><a href="profile.html">Profile</a></li>
-            </ul>
-        </nav>
-    </div>
-</header>
+// -----------------------------
+// 1. TOGGLE LOGIC
+// -----------------------------
+function toggleCard(headerElement) {
+  const card = headerElement.closest(".booking-card");
+  if (card) card.classList.toggle("is-expanded");
+}
 
-    <section class="hero">
-        <div class="container hero-content">
-            <div class="hero-text">
-                <div class="rect-horizontal"></div>
-                <h1>THE<br><span class="highlight">DAYIMA</span><br>PROJECT</h1>
-                <div class="subheading-wrapper">
-                    <div class="rect-vertical"></div>
-                    <div class="subheading-content">
-                        <p>Empowering communities through period education, breaking stigmas, and creating accessible resources for menstrual health.</p>
-                        <a href="programs.html" class="btn btn-light-pink">Get Started →</a>
-                    </div>
-                </div>
-            </div>
-<div class="stack-wrapper">
-    <div class="carousel" id="cardStack">
-        <div class="carousel-stamp"></div>
-        
-        <img src="assets/images/DaYiMa pic.jpeg" class="card" />
-        <img src="assets/images/Period pads.jpeg" class="card" />
-        <img src="assets/images/Period craft.png" class="card" />
-    </div>
-</div>
-        </div>
-    </section>
+// -----------------------------
+// 2. CAROUSEL LOGIC
+// -----------------------------
+function startCarousel() {
+  const images = document.querySelectorAll(".carousel img");
+  if (!images.length) return;
 
-    <section class="section section-01">
-        <div class="container">
-            <div class="dayima-header-row">
-                <span class="dayima-badge-num num-pink">01</span>
-                <div class="dayima-header-text">
-                    <h2>WHAT <span class="purple">WE DO</span></h2>
-                    <p>Educating and empowering communities about menstrual health</p>
-                </div>
-            </div>
-            <div class="box-row">
-                <div class="box">
-                    <img src="assets/images/Period workshop.png" class="box-image" />
-                    <h3 class="box-title">PERIOD EDUCATION</h3>
-                    <p class="box-text">Providing educational resources to raise awareness and knowledge about menstrual health.</p>
-                </div>
-                <div class="box">
-                    <img src="assets/images/Menses Health.png" class="box-image" />
-                    <h3 class="box-title">PERIOD PRODUCT DONATION</h3>
-                    <p class="box-text">Collecting and distributing menstrual products to those in need.</p>
-                </div>
-                <div class="box">
-                    <img src="assets/images/Period Education.png" class="box-image" />
-                    <h3 class="box-title">COMMUNITY SUPPORT</h3>
-                    <p class="box-text">Building strong support networks and organizing local initiatives.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+  let currentIndex = 0;
 
-    <section class="section section-02">
-    <div class="container">
-        <div class="dayima-header-row">
-            <span class="dayima-badge-num num-pink">02</span>
-            <div class="dayima-header-text">
-                <h2>OUR <span class="pink-saturated">GOALS</span></h2>
-                <p>Breaking stigmas and creating accessible resources</p>
-            </div>
-        </div>
-        
-        <div class="box-row">
-            <div class="box">
-                <img src="assets/images/PeriodPoverty.png" alt="Icon for Ending Period Poverty" class="box-image" />
-                <h3 class="box-title">Ending Period Poverty</h3>
-            </div>
-            
-            <div class="box">
-                <img src="assets/images/SelfLove.jpeg" alt="Icon for Self Love and Beauty" class="box-image" />
-                <h3 class="box-title">Build self-love & harness the beauty</h3>
-            </div>
-            
-            <div class="box">
-                <img src="assets/images/Reprogram.jpeg" alt="Icon for Reprogramming brains about periods" class="box-image" />
-                <h3 class="box-title">Re-program people's brain about periods</h3>
-            </div>
-        </div>
-    </div>
-</section>
+  // Show first image
+  images.forEach((img, idx) => (img.style.display = idx === 0 ? "block" : "none"));
 
-    <section id="map" class="section section-03">
-    <div class="container">
-        <div class="dayima-header-row header-stacked">
-            <span class="dayima-badge-num num-white">03</span>
-            <div class="dayima-header-text">
-                <h2>PERIOD-<br>FRIENDLY <span class="pink-light">MAP</span></h2>
-                <p class="white-text">An interactive resource to locate period-<br>friendly bathrooms & free menstrual products<br>in Malaysia.</p>
-            </div>
-        </div>
-        <div class="map-container">
-            <iframe src="https://www.google.com/maps/d/embed?mid=1NxcxSWuK53NYGeIArLF40xNHaWgw3ZM&ll=3.0403136057304865,101.79777876948397&z=17" width="100%" height="500" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
-        </div>
-    </div>
-</section>
+  setInterval(() => {
+    images[currentIndex].style.display = "none";
+    currentIndex = (currentIndex + 1) % images.length;
+    images[currentIndex].style.display = "block";
+  }, 3000);
+}
 
-    <section id="team" class="section section-04">
-        <div class="container">
-            <div class="dayima-header-row">
-                <span class="dayima-badge-num num-purple">04</span>
-                <div class="dayima-header-text">
-                    <h2>MEET OUR <span class="pink-saturated">TEAM</span></h2>
-                    <p>The passionate individuals making this mission possible.</p>
-                </div>
-            </div>
-            <div class="teambackground"></div> 
-            <div class="teamimage"></div>
-            <div class="btn-container">
-                <a href="team.html" class="btn btn-saturated-pink"> KNOW MORE → </a>
-            </div>
-        </div>
-    </section>
+// -----------------------------
+// 3. LOAD BOOKINGS
+// -----------------------------
+async function loadBookings() {
+  const container = document.getElementById("bookingsList");
+  if (!container) return;
 
-    <footer class="site-footer">
-        <div class="footer-top container">
-            <div class="footer-brand">
-                <div class="brand-header">
-                    <img src="assets/images/Logo1ldpi.png" alt="Logo" class="footer-logo">
-                    <h4 class="brand-name">THE <span class="pink-saturated-text">DAYIMA</span> PROJECT</h4>
-                </div>
-                <p class="brand-tagline">Breaking taboos and making menstrual health education accessible for everyone in Malaysia.</p>
-            </div>
-            <div class="footer-links-group">
-                <div class="footer-column">
-                    <h4>Quick Links</h4>
-                    <ul>
-                        <li><a href="about.html">About Us</a></li>
-                        <li><a href="mission.html">Our Mission</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h4>Resources</h4>
-                    <ul>
-                        <li><a href="#map">Period Map</a></li>
-                        <li><a href="faq.html">FAQs</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h4>Connect</h4>
-                    <ul>
-                        <li><a href="contact.html">Contact Us</a></li>
-                        <li><a href="https://instagram.com/dayimaproject">Instagram</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>© 2026 The DaYiMa Project. All rights reserved.</p>
-        </div>
-    </footer>
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/book-hygiene`);
+    if (!res.ok) throw new Error("Fetch failed");
 
-    <script src="js/script.js"></script>
-</body>
+    const bookings = await res.json();
+    container.innerHTML = "";
 
-</html>
+    if (!bookings.length) {
+      container.innerHTML = "<p style='text-align:center;'>No current bookings found.</p>";
+      return;
+    }
+
+    bookings.forEach((b) => {
+      const div = document.createElement("div");
+      div.className = "booking-card";
+
+      div.innerHTML = `
+        <div class="card-header" onclick="toggleCard(this)">
+          <div class="header-left">
+            <span class="tag">${b.workshopType || "Workshop Request"}</span>
+            <h3>${b.organization || "Unnamed Org"}</h3>
+          </div>
+          <div class="header-right">
+            <span class="toggle-icon">▼</span>
+          </div>
+        </div>
+
+        <div class="card-content">
+          <div class="booking-details">
+            <p><strong>Contact:</strong> ${b.contactPerson || "N/A"}</p>
+            <p><strong>Email:</strong> ${b.email || "No email"}</p>
+            <p><strong>Phone:</strong> ${b.phone || "No phone"}</p>
+            <p><strong>Date:</strong> ${b.preferredDate || "TBD"}</p>
+            <p><strong>Participants:</strong> ${b.participants || 0}</p>
+          </div>
+
+          ${b.message ? `<div class="notes-box"><strong>Notes:</strong> ${b.message}</div>` : ""}
+
+          <button class="btn-cancel" onclick="cancelBooking('${b._id}')">Cancel Request →</button>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  } catch (err) {
+    console.error("❌ Error loading bookings:", err);
+    container.innerHTML =
+      "<p style='color:red; text-align:center;'>Cannot connect to backend. Check your backend URL.</p>";
+  }
+}
+
+// -----------------------------
+// 4. DELETE BOOKING
+// -----------------------------
+async function cancelBooking(id) {
+  if (!confirm("Are you sure you want to delete this request?")) return;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/book-hygiene/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Delete failed");
+
+    loadBookings(); // Refresh list
+  } catch (err) {
+    console.error("❌ Delete error:", err);
+    alert("Delete failed. Check backend connection.");
+  }
+}
+
+// -----------------------------
+// 5. FORM SUBMISSION
+// -----------------------------
+const hygieneForm = document.getElementById("hygieneForm");
+if (hygieneForm) {
+  hygieneForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const formData = {
+      workshopType: document.getElementById("workshopType").value,
+      organization: document.getElementById("organization").value,
+      contactPerson: document.getElementById("contactPerson").value,
+      email: document.getElementById("email").value,
+      phone: document.getElementById("phone").value,
+      preferredDate: document.getElementById("date").value,
+      participants: document.getElementById("participants").value,
+      message: document.getElementById("notes").value,
+    };
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/book-hygiene`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Submission failed");
+      }
+
+      alert("🎉 Request submitted successfully!");
+      hygieneForm.reset();
+      loadBookings();
+    } catch (err) {
+      console.error("❌ Submission error:", err);
+      alert("Could not connect to backend. Check your server.");
+    }
+  });
+}
+
+// -----------------------------
+// 6. INITIALIZE
+// -----------------------------
+document.addEventListener("DOMContentLoaded", () => {
+  startCarousel();
+  loadBookings();
+});
